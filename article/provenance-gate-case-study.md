@@ -371,10 +371,10 @@ flowchart TD
 git clone https://github.com/provenance-gate/provenance-gate --depth 1
 cd provenance-gate
 npm install
-npm test                # 期待: provenance ファイル不在で gate が NOT_READY を返す
-node src/cli.js examples/missing-provenance.json
-node src/cli.js examples/self-attested-review.json
-node src/cli.js examples/valid-provenance.json
+npm test                # 期待: テスト PASS
+node src/cli.js examples/missing-provenance.json      # 期待: NOT_READY
+node src/cli.js examples/self-attested-review.json    # 期待: NOGO
+node src/cli.js examples/valid-provenance.json        # 期待: GO
 ```
 
 **対象 tag**: `v0.1.0`
