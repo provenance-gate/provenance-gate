@@ -1,11 +1,11 @@
 {
   "name": "provenance-gate",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": false,
   "description": "A small provenance gate example for AI-agent review and scoring workflows.",
   "type": "commonjs",
   "scripts": {
-    "check": "node --check src/cli.js && node --check src/provenance-gate.js && node --check tests/provenance-gate.test.js",
+    "check": "node --check src/cli.js && node --check src/provenance-gate.js && node --check src/audit-manifest.js && node --check scripts/build-audit-evidence-manifest.js && node --check tests/provenance-gate.test.js",
     "test": "npm run check && node tests/provenance-gate.test.js",
     "smoke": "node src/cli.js examples/valid-provenance.json"
   },

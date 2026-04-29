@@ -69,16 +69,49 @@ example exits successfully.
 - Score files exist
 - Score progression is present
 - Cost log exists
+- Audit evidence manifest exists
+- Manifest sha256 matches
+- Manifest-listed evidence files exist
+- Manifest-listed evidence file sha256 values match
+- Independent audit evidence is recorded in the manifest
 - Reviewer is not self-attested
 - Score threshold is met
 - Creative contract is not placeholder or mood-only
 - Creative fidelity threshold is at least 90
+
+## Audit Evidence Manifest
+
+`audit_evidence_manifest` is the public mirror of the GOD strict audit log
+contract. A gate result can only be `GO` when the manifest exists, its own
+sha256 matches, and the files listed inside it still exist with matching hashes.
+
+The manifest must include:
+
+- `mode`
+- `execution_profile`
+- `gate_statuses`
+- `run_dirs`
+- `evidence_files`
+- `independent_audit_evidence`
+- `skipped_or_unavailable`
+- `sha256`
+
+Independent audit entries must record the reviewer identity, role, prompt, files
+read, verdict, findings, output file path, and output sha256. If an audit step
+was skipped or unavailable, the manifest must say so with a reason.
+
+You can create a manifest wrapper from JSON:
+
+```bash
+node scripts/build-audit-evidence-manifest.js --out audit-evidence-manifest.json < manifest-input.json
+```
 
 ## What This Repository Contains
 
 - A dependency-free Node.js gate implementation
 - Example inputs for `NOT_READY`, `NOGO`, and `GO`
 - Minimal review/scoring artifacts used by the valid example
+- A valid audit evidence manifest fixture
 - A public case-study draft under `article/`
 - Sanitization notes in `SANITIZATION.md`
 

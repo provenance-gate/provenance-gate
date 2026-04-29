@@ -1,0 +1,84 @@
+{
+  "schema_version": "provenance_gate.audit_evidence_manifest.v1",
+  "mode": "strict",
+  "execution_profile": {
+    "profile": "strict",
+    "host": "public_fixture"
+  },
+  "gate_statuses": [
+    {
+      "gate": "review_provenance",
+      "status": "GO"
+    },
+    {
+      "gate": "final_gate",
+      "status": "GO"
+    }
+  ],
+  "run_dirs": [
+    {
+      "kind": "review_run",
+      "path": "valid-review-run",
+      "status": "created"
+    }
+  ],
+  "evidence_files": [
+    {
+      "kind": "rubric",
+      "path": "valid-review-run/rubric.yaml",
+      "sha256": "e50fdc5af3f2b4cbf5b1bbc33b71a1fcd83d11daa3e430d58e1a59fc272c5094",
+      "status": "created"
+    },
+    {
+      "kind": "review_pass",
+      "path": "valid-review-run/pass_001.md",
+      "sha256": "7b60bfd4a955d221a40d3ef9b4b3e57bea7928964a00f1db53794b9b35640003",
+      "status": "created"
+    },
+    {
+      "kind": "score",
+      "path": "valid-review-run/score_v1.yaml",
+      "sha256": "b7b5116c4a693a101850274b23d0a73ba6a3d2ff419aa40dc281eaab8cfb83c6",
+      "status": "created"
+    },
+    {
+      "kind": "cost_log",
+      "path": "valid-review-run/cost_log.jsonl",
+      "sha256": "373365cb9a78520f0e8a1a518cee9785d277bad8649754b33c0d539f02683b24",
+      "status": "created"
+    }
+  ],
+  "independent_audit_evidence": [
+    {
+      "kind": "final_gate_independent_review",
+      "path": "valid-review-run/independent-review.md",
+      "sha256": "ccc8f85db3313ff776e97be64bf7b3394743819a641ef485a8b873dfccf3d947",
+      "status": "created",
+      "agent_id": "codex_subagent_fixture",
+      "nickname": "Carver",
+      "reviewer_role": "independent_reviewer",
+      "audit_prompt": "Review this provenance gate fixture as an independent strict audit gate.",
+      "files_read": [
+        "src/provenance-gate.js",
+        "src/audit-manifest.js",
+        "examples/valid-provenance.json"
+      ],
+      "verdict": "GO",
+      "findings": {
+        "P0": [],
+        "P1": [],
+        "P2": []
+      }
+    }
+  ],
+  "skipped_or_unavailable": [
+    {
+      "kind": "external_immutable_seal",
+      "status": "not_applicable",
+      "reason": "Public fixture demonstrates local hash verification only."
+    }
+  ],
+  "sha256": {
+    "note": "Manifest file sha256 is declared by the caller in audit_evidence_manifest.sha256."
+  }
+}

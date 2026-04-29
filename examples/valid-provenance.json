@@ -1,5 +1,10 @@
 {
+  "mode": "strict",
   "implementer_identity": "claude-code",
+  "audit_evidence_manifest": {
+    "path": "valid-review-run/audit-evidence-manifest.json",
+    "sha256": "b7f489aac482a30df2e7c4ff7c54328420c71caf052c3575fb78ca276e650797"
+  },
   "review": {
     "run_dir": "valid-review-run",
     "verdict": "GO",
