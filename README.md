@@ -1,66 +1,130 @@
 # Provenance Gate
 
-This is a small, sanitized example of a provenance gate for AI-agent review and
-scoring workflows.
+**Stop AI agents from passing quality gates with unverifiable claims.**
 
-The core idea is simple:
+> If an AI agent says "review passed", this gate asks:
+> "Where is the review?"
 
-> A quality gate should verify evidence that review and scoring actually ran,
-> not merely consume claims such as `verdict: GO` or `score: 99`.
+Provenance Gate is a small, dependency-free example of an evidence-based quality
+gate for AI-agent workflows. It rejects `verdict: GO`, `score: 99`, or
+`review passed` unless the required review, scoring, and trace artifacts
+actually exist.
 
-## What This Repository Contains
+## The Problem
 
-- A dependency-free Node.js gate implementation.
-- Example inputs that show three cases:
-  - missing provenance -> `NOT_READY`
-  - self-attested review -> `NOGO`
-  - independent provenance files -> `GO`
-- A public article draft under `article/`.
+AI agents are increasingly used to implement, review, score, document, and ship
+work. But many internal automation flows still trust scalar claims:
 
-This repository intentionally does **not** include private raw evidence,
-customer data, local machine paths, internal project logs, or the private
-development history of the original harness.
+- `review: passed`
+- `score: 99`
+- `tests: passed`
+- `approved: true`
+
+Those claims are easy for an agent to produce, even when the underlying review
+or scoring step did not actually run.
+
+## The Idea
+
+Do not trust the claim. Check the provenance.
+
+A gate should verify:
+
+- who reviewed it,
+- what rubric was used,
+- which review passes ran,
+- where the score files are,
+- whether the score improved over time,
+- whether cost and runtime logs show that evaluation actually happened.
 
 ## Quick Start
 
 ```bash
+git clone https://github.com/provenance-gate/provenance-gate --depth 1
+cd provenance-gate
+npm install
 npm test
-node src/cli.js examples/missing-provenance.json
-node src/cli.js examples/self-attested-review.json
-node src/cli.js examples/valid-provenance.json
+
+node src/cli.js examples/missing-provenance.json      # NOT_READY
+node src/cli.js examples/self-attested-review.json    # NOGO
+node src/cli.js examples/valid-provenance.json        # GO
 ```
 
-The first two commands are expected to fail the gate. The third should return
-`GO`.
+## Example Outcomes
 
-## Gate Model
+| Case | Result | Why |
+|---|---:|---|
+| Missing review artifacts | `NOT_READY` | The gate cannot confirm that review ran. |
+| Self-attested review | `NOGO` | The implementer is also claiming to be the reviewer. |
+| Independent artifacts present | `GO` | Required evidence exists and passes the policy. |
 
-The example gate checks for:
+## What It Checks
 
-- a review run directory,
-- review pass files,
-- a scoring rubric,
-- score files and score progression,
-- a cost log,
-- an independent reviewer identity,
-- score threshold,
-- optional creative contract constraints.
+- Review run directory exists
+- Rubric exists
+- Review pass files exist
+- Score files exist
+- Score progression is present
+- Cost log exists
+- Reviewer is not self-attested
+- Score threshold is met
+- Creative contract is not placeholder or mood-only
+- Creative fidelity threshold is at least 90
 
-It rejects:
+## What This Repository Contains
 
-- `reviewer: self`,
-- missing `run_dir`,
-- missing rubric/pass/score/cost artifacts,
-- mood-only creative references,
-- placeholder contracts,
-- infeasible targets,
-- creative fidelity thresholds below 90.
+- A dependency-free Node.js gate implementation
+- Example inputs for `NOT_READY`, `NOGO`, and `GO`
+- Minimal review/scoring artifacts used by the valid example
+- A public case-study draft under `article/`
+- Sanitization notes in `SANITIZATION.md`
 
-## Scope
+This repository intentionally does **not** include private raw evidence,
+customer data, local machine paths, internal project logs, or private
+development history.
 
-This is not a full security product. It is a worked example for preventing a
-common AI-agent quality-gate failure mode: scalar self-attestation passing as
+## What This Is Not
+
+This is not a complete security product.
+
+It does not yet provide:
+
+- signed artifacts,
+- append-only storage,
+- remote attestation,
+- CI-native enforcement,
+- tamper-proof logs,
+- hosted dashboards.
+
+It is a minimal worked example of the pattern.
+
+## Who This Is For
+
+- AI-agent framework builders
+- Internal automation teams
+- Eval and QA engineers
+- Developer tooling teams
+- People building autonomous coding or review workflows
+
+## Why Now
+
+As agents move from autocomplete to autonomous execution, quality gates need to
+verify execution evidence, not just natural-language claims.
+
+Scalar quality claims are not enough.
+
+## Roadmap
+
+- GitHub Actions integration
+- JSON Schema policy files
+- Signed provenance bundles
+- CI annotations
+- Hosted report viewer
+- Multi-agent reviewer identity model
+
+## Related Article
+
+This repository accompanies a Japanese case study on an AI-agent review gate
+bypass and the migration from scalar self-attestation to provenance-based
 verification.
 
-For high-stakes environments, combine this pattern with CI logs, append-only
-storage, signed artifacts, and external anchoring.
+Article URL: TBD
