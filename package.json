@@ -1,6 +1,6 @@
 {
   "name": "provenance-gate",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "A small provenance gate example for AI-agent review and scoring workflows.",
   "type": "commonjs",
