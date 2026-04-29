@@ -12,7 +12,7 @@ function readJson(filePath) {
 function main(argv) {
   const inputPath = argv[2];
   if (!inputPath) {
-    process.stderr.write("usage: god-provenance-gate <input.json>\n");
+    process.stderr.write("usage: provenance-gate <input.json>\n");
     process.exit(2);
   }
   const resolved = path.resolve(inputPath);

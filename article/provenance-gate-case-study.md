@@ -368,8 +368,8 @@ flowchart TD
 この記事で使った provenance gate の最小再現ハーネスを GitHub に置いています。最小再現コマンド:
 
 ```bash
-git clone https://github.com/sho-ikeda-ai/god-provenance-gate --depth 1
-cd god-provenance-gate
+git clone https://github.com/provenance-gate/provenance-gate --depth 1
+cd provenance-gate
 npm install
 npm test                # 期待: provenance ファイル不在で gate が NOT_READY を返す
 node src/cli.js examples/missing-provenance.json

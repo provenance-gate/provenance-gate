@@ -1,4 +1,4 @@
-# GOD Provenance Gate
+# Provenance Gate
 
 This is a small, sanitized example of a provenance gate for AI-agent review and
 scoring workflows.

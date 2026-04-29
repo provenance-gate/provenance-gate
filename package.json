@@ -1,5 +1,5 @@
 {
-  "name": "god-provenance-gate",
+  "name": "provenance-gate",
   "version": "0.1.0",
   "private": false,
   "description": "A small provenance gate example for AI-agent review and scoring workflows.",
@@ -10,7 +10,7 @@
     "smoke": "node src/cli.js examples/valid-provenance.json"
   },
   "bin": {
-    "god-provenance-gate": "src/cli.js"
+    "provenance-gate": "src/cli.js"
   },
   "keywords": [
     "ai",
