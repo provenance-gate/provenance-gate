@@ -2,6 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { verifyAuditEvidenceManifest } = require("./audit-manifest");
 
 const DEFAULT_POLICY = {
   minimumScore: 95,
@@ -14,7 +15,9 @@ const DEFAULT_POLICY = {
     "score_progression",
     "cost_log_path"
   ],
-  creativeMinimumScore: 90
+  creativeMinimumScore: 90,
+  requireAuditEvidenceManifest: true,
+  requireIndependentAuditEvidence: true
 };
 
 function hasValue(value) {
@@ -73,6 +76,7 @@ function evaluateReviewProvenance(input, options = {}) {
   const baseDir = options.baseDir || process.cwd();
   const reasons = { missing: [], failed: [], warnings: [] };
   const evidence = [];
+  let auditEvidenceManifest = null;
   const review = input.review || input.planning_review || input.implementation_review || {};
   const score = input.score || input.planning_score || input.implementation_score || {};
 
@@ -107,6 +111,16 @@ function evaluateReviewProvenance(input, options = {}) {
     }
   }
 
+  if (policy.requireAuditEvidenceManifest || input.audit_evidence_manifest || input.audit_manifest || input.audit_log_manifest) {
+    auditEvidenceManifest = verifyAuditEvidenceManifest(input, { baseDir, policy });
+    reasons.missing.push(...auditEvidenceManifest.reasons.missing);
+    reasons.failed.push(...auditEvidenceManifest.reasons.failed);
+    reasons.warnings.push(...auditEvidenceManifest.reasons.warnings);
+    if (auditEvidenceManifest.ok) {
+      evidence.push(`audit_evidence_manifest:${auditEvidenceManifest.path}`);
+    }
+  }
+
   const numericScore = getScore(score);
   if (numericScore === null) reasons.missing.push("score_missing");
   else if (numericScore < policy.minimumScore) reasons.failed.push("score_below_threshold");
@@ -120,6 +134,7 @@ function evaluateReviewProvenance(input, options = {}) {
     completion_allowed: status === "GO",
     reasons,
     evidence,
+    audit_evidence_manifest: auditEvidenceManifest,
     threshold: policy.minimumScore
   };
 }
@@ -209,5 +224,6 @@ module.exports = {
   DEFAULT_POLICY,
   evaluateReviewProvenance,
   evaluateCreativeContract,
-  evaluateGate
+  evaluateGate,
+  verifyAuditEvidenceManifest
 };
