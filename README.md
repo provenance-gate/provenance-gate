@@ -49,6 +49,10 @@ node src/cli.js examples/self-attested-review.json    # NOGO
 node src/cli.js examples/valid-provenance.json        # GO
 ```
 
+The first two example commands intentionally exit with a non-zero status because
+the gate is rejecting incomplete or self-attested provenance. The `valid`
+example exits successfully.
+
 ## Example Outcomes
 
 | Case | Result | Why |

@@ -377,6 +377,8 @@ node src/cli.js examples/self-attested-review.json    # 期待: NOGO
 node src/cli.js examples/valid-provenance.json        # 期待: GO
 ```
 
+最初の 2 つは gate が拒否する例なので、終了コードも非 0 になります。`valid` の例だけが成功終了します。
+
 **対象 tag**: `v0.1.0`
 
 特にコメントが嬉しい軸:
