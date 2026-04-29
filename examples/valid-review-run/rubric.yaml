@@ -1,0 +1,8 @@
+criteria:
+  - name: evidence exists
+    points: 40
+  - name: independent reviewer
+    points: 30
+  - name: score threshold
+    points: 30
+threshold: 95

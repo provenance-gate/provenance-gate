@@ -1,0 +1,24 @@
+{
+  "implementer_identity": "claude-code",
+  "review": {
+    "run_dir": "valid-review-run",
+    "verdict": "GO",
+    "reviewer": "self",
+    "rubric_path": "valid-review-run/rubric.yaml",
+    "pass_files": [
+      "valid-review-run/pass_001.md"
+    ]
+  },
+  "score": {
+    "score": 99,
+    "verdict": "PASS",
+    "rater": "self",
+    "score_files": [
+      "valid-review-run/score_v1.yaml"
+    ],
+    "score_progression": [
+      "valid-review-run/score_v1.yaml"
+    ],
+    "cost_log_path": "valid-review-run/cost_log.jsonl"
+  }
+}

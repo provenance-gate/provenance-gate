@@ -1,0 +1,52 @@
+{
+  "implementer_identity": "claude-code",
+  "review": {
+    "run_dir": "valid-review-run",
+    "verdict": "GO",
+    "reviewer_identity": "codex-cli",
+    "rubric_path": "valid-review-run/rubric.yaml",
+    "pass_files": [
+      "valid-review-run/pass_001.md"
+    ]
+  },
+  "score": {
+    "score": 98,
+    "verdict": "PASS",
+    "rater": "codex-cli",
+    "score_files": [
+      "valid-review-run/score_v1.yaml"
+    ],
+    "score_progression": [
+      "valid-review-run/score_v1.yaml"
+    ],
+    "cost_log_path": "valid-review-run/cost_log.jsonl"
+  },
+  "creative_required": true,
+  "creative_contract": {
+    "artifact_type": "document",
+    "reference_artifact": "article/provenance-gate-case-study.md",
+    "acceptance_criteria": [
+      "The article explains the failure mode and mitigation clearly."
+    ],
+    "fidelity_criteria": [
+      {
+        "name": "technical accuracy",
+        "weight": 45
+      },
+      {
+        "name": "evidence clarity",
+        "weight": 35
+      },
+      {
+        "name": "reader usefulness",
+        "weight": 20
+      }
+    ],
+    "minimum_score": 90,
+    "implementation_feasibility": "The article and public example are text and Node.js code only.",
+    "out_of_scope": [
+      "Publishing private raw evidence",
+      "Claiming full insider-threat resistance"
+    ]
+  }
+}

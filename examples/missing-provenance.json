@@ -1,0 +1,10 @@
+{
+  "implementer_identity": "claude-code",
+  "review": {
+    "verdict": "GO"
+  },
+  "score": {
+    "score": 99,
+    "verdict": "PASS"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "god-provenance-gate",
+  "version": "0.1.0",
+  "private": false,
+  "description": "A small provenance gate example for AI-agent review and scoring workflows.",
+  "type": "commonjs",
+  "scripts": {
+    "check": "node --check src/cli.js && node --check src/provenance-gate.js && node --check tests/provenance-gate.test.js",
+    "test": "npm run check && node tests/provenance-gate.test.js",
+    "smoke": "node src/cli.js examples/valid-provenance.json"
+  },
+  "bin": {
+    "god-provenance-gate": "src/cli.js"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "evaluation",
+    "provenance",
+    "quality-gate"
+  ],
+  "license": "MIT"
+}
