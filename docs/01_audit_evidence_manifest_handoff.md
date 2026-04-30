@@ -2,8 +2,8 @@
 
 ## Summary
 
-Provenance Gate now mirrors the GOD strict audit evidence contract in public
-form. A `GO` result requires a real `audit_evidence_manifest` reference, a
+Provenance Gate now includes a public strict audit evidence contract. A `GO`
+result requires a real `audit_evidence_manifest` reference, a
 matching manifest sha256, existing evidence files, matching evidence hashes, and
 independent audit evidence in the manifest.
 

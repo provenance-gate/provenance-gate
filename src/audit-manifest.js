@@ -6,8 +6,7 @@ const crypto = require("crypto");
 
 const SCHEMA_VERSION = "provenance_gate.audit_evidence_manifest.v1";
 const COMPATIBLE_SCHEMA_VERSIONS = new Set([
-  SCHEMA_VERSION,
-  "god.audit_evidence_manifest.v1"
+  SCHEMA_VERSION
 ]);
 const SKIP_STATUSES = new Set([
   "not_created",
@@ -353,7 +352,7 @@ function strictAuditClaim(input) {
     .filter((v) => v !== undefined && v !== null)
     .map((v) => typeof v === "string" ? v : JSON.stringify(v))
     .join("\n");
-  return /\bGOD\s+audited\b|\bGOD\s+audit(?:ed)?\b|\blysis\s+GO\b|\bKPI\s+95\+?\b|\b95\+\s+PASS\b|GOD\u76e3\u67fb|lysis\s*GO|KPI\s*95|95\u70b9/i.test(text);
+  return /\bstrict\s+audit(?:ed)?\b|\bindependent\s+audit(?:ed)?\b|\blysis\s+GO\b|\bKPI\s+95\+?\b|\b95\+\s+PASS\b|lysis\s*GO|KPI\s*95|95\u70b9/i.test(text);
 }
 
 function verifyAuditEvidenceManifest(input, options = {}) {

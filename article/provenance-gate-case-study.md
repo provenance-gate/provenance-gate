@@ -365,7 +365,13 @@ flowchart TD
 
 ## 付録 B: 検証用ハーネス
 
-この記事で使った provenance gate の最小再現ハーネスを GitHub に置いています。最小再現コマンド:
+この記事で扱った監査偽装対策のうち、公開しやすい中核部分だけを切り出した最小再現ハーネスを GitHub に置いています。
+
+これは、Claude Code / Codex / subagent を自動起動するフル機能の自律実行環境ではありません。役割はもっと小さく、提出された監査証跡を見て「これは独立レビューが走ったと言えるか」「自己申告だけなので拒否すべきか」を判定する検証 gate です。
+
+たとえるなら、フル機能の自律実行環境は「先生を呼び、別の先生にも採点させ、記録を保管する仕組み」です。一方、この公開リポジトリは「提出された答案に、本当に別の先生が採点した証拠が付いているかを確認するチェック機」です。環境依存の自動化や危険な操作は含めず、証跡検証の部分だけを再利用できる形にしています。
+
+最小再現コマンド:
 
 ```bash
 git clone https://github.com/provenance-gate/provenance-gate --depth 1
@@ -377,7 +383,7 @@ node src/cli.js examples/self-attested-review.json    # 期待: NOGO
 node src/cli.js examples/valid-provenance.json        # 期待: GO
 ```
 
-公開リポジトリ側の監査契約も、GOD 本体の strict audit contract に合わせています:
+公開リポジトリ側の監査契約は、この記事で説明した strict audit contract の中核に合わせています:
 
 - `GO` には `audit_evidence_manifest` が必須
 - Claude Code が実装担当なら、Codex が使える環境では Codex cross-review が必須
