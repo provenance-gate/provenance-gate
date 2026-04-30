@@ -10,6 +10,24 @@ gate for AI-agent workflows. It rejects `verdict: GO`, `score: 99`, or
 `review passed` unless the required review, scoring, and trace artifacts
 actually exist.
 
+## Scope
+
+This repository is a public, minimal verification gate. It is not a full agent
+orchestrator and it does not launch Claude Code, Codex, CI jobs, or subagents by
+itself.
+
+Think of it as a document checker:
+
+- It checks whether the submitted evidence proves that independent review ran.
+- It rejects self-attested review and missing audit logs.
+- It shows how to structure audit evidence so another workflow can verify it.
+
+The private workflow that motivated this case study includes local automation,
+host adapters, repository operations, and environment-specific rules. Those
+pieces are intentionally not published here because they are not portable and
+could be unsafe in another user's environment. This repository publishes the
+portable core idea: **do not trust the claim; verify the provenance.**
+
 ## The Problem
 
 AI agents are increasingly used to implement, review, score, document, and ship
@@ -84,8 +102,8 @@ example exits successfully.
 
 ## Audit Evidence Manifest
 
-`audit_evidence_manifest` is the public mirror of the GOD strict audit log
-contract. A gate result can only be `GO` when the manifest exists, its own
+`audit_evidence_manifest` is the public audit-log contract for this repository.
+A gate result can only be `GO` when the manifest exists, its own
 sha256 matches, and the files listed inside it still exist with matching hashes.
 
 The manifest must include:
@@ -106,7 +124,7 @@ was skipped or unavailable, the manifest must say so with a reason.
 
 ## Host Audit Contract
 
-This public gate mirrors the strict GOD audit contract:
+This public gate enforces a strict provenance audit contract:
 
 - Claude Code authors should use Codex cross-review when Codex is available.
 - If Claude Code cannot use Codex cross-review, the manifest must disclose that
