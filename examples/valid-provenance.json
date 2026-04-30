@@ -1,9 +1,14 @@
 {
   "mode": "strict",
   "implementer_identity": "claude-code",
+  "author_identity": {
+    "host": "claude-code",
+    "session_id": "claude_author_fixture"
+  },
+  "codex_cross_review_available": true,
   "audit_evidence_manifest": {
     "path": "valid-review-run/audit-evidence-manifest.json",
-    "sha256": "b7f489aac482a30df2e7c4ff7c54328420c71caf052c3575fb78ca276e650797"
+    "sha256": "c2614b08bb90768e60ff2b5280dcfddfba71cec442b72147a918edde6b1f9e8f"
   },
   "review": {
     "run_dir": "valid-review-run",

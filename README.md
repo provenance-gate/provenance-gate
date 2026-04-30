@@ -74,6 +74,9 @@ example exits successfully.
 - Manifest-listed evidence files exist
 - Manifest-listed evidence file sha256 values match
 - Independent audit evidence is recorded in the manifest
+- Audit reviewer was a separate subagent or cross-reviewer
+- Claude Code uses Codex cross-review when available
+- Codex uses a separate Codex subagent
 - Reviewer is not self-attested
 - Score threshold is met
 - Creative contract is not placeholder or mood-only
@@ -97,8 +100,26 @@ The manifest must include:
 - `sha256`
 
 Independent audit entries must record the reviewer identity, role, prompt, files
-read, verdict, findings, output file path, and output sha256. If an audit step
+read, verdict, findings, output file path, output sha256, reviewer host,
+reviewer mechanism, and whether a separate subagent was used. If an audit step
 was skipped or unavailable, the manifest must say so with a reason.
+
+## Host Audit Contract
+
+This public gate mirrors the strict GOD audit contract:
+
+- Claude Code authors should use Codex cross-review when Codex is available.
+- If Claude Code cannot use Codex cross-review, the manifest must disclose that
+  with `cross_review_unavailable_reason`, and the review must still be performed
+  by a separate Task/subagent.
+- Codex authors cannot call Claude Code as a peer reviewer in this public
+  contract, so Codex audit evidence must come from a separate Codex subagent.
+- Inline self-review, `reviewer: self`, `self_check`, and `local_advisory` do
+  not count as independent audit evidence.
+- When a user asks for audit logs, return the real manifest path, manifest
+  sha256, listed run directories, evidence files, independent audit files, and
+  any `skipped_or_unavailable` reasons. Do not recreate or invent audit logs
+  after the fact.
 
 You can create a manifest wrapper from JSON:
 

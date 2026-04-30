@@ -3,7 +3,8 @@
   "mode": "strict",
   "execution_profile": {
     "profile": "strict",
-    "host": "public_fixture"
+    "host": "claude-code",
+    "codex_cross_review_available": true
   },
   "gate_statuses": [
     {
@@ -53,10 +54,16 @@
       "kind": "final_gate_independent_review",
       "path": "valid-review-run/independent-review.md",
       "sha256": "ccc8f85db3313ff776e97be64bf7b3394743819a641ef485a8b873dfccf3d947",
+      "output_file_path": "valid-review-run/independent-review.md",
+      "output_sha256": "ccc8f85db3313ff776e97be64bf7b3394743819a641ef485a8b873dfccf3d947",
       "status": "created",
       "agent_id": "codex_subagent_fixture",
       "nickname": "Carver",
       "reviewer_role": "independent_reviewer",
+      "reviewer_host": "codex",
+      "reviewer_mechanism": "codex_cross_review",
+      "separate_subagent": true,
+      "cross_review_available": true,
       "audit_prompt": "Review this provenance gate fixture as an independent strict audit gate.",
       "files_read": [
         "src/provenance-gate.js",

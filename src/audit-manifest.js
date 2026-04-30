@@ -33,6 +33,176 @@ function hasValue(value) {
   return true;
 }
 
+function normalizeToken(value) {
+  return String(value || "").trim().toLowerCase().replace(/[_\s]+/g, "-");
+}
+
+function normalizeHost(value) {
+  const raw = normalizeToken(value);
+  if (!raw) return "";
+  if (raw.includes("claude")) return "claude-code";
+  if (raw.includes("codex")) return "codex";
+  return raw;
+}
+
+function asBoolean(value) {
+  if (value === true || value === false) return value;
+  const raw = normalizeToken(value);
+  if (["true", "yes", "available", "1"].includes(raw)) return true;
+  if (["false", "no", "unavailable", "0"].includes(raw)) return false;
+  return null;
+}
+
+function appendSignalValue(values, value, seen) {
+  if (value === undefined || value === null) return;
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    values.push(value);
+    return;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) appendSignalValue(values, item, seen);
+    return;
+  }
+  if (typeof value === "object") {
+    if (seen.has(value)) return;
+    seen.add(value);
+    for (const key of Object.keys(value)) {
+      if (/^(self_check|local_advisory|self_review)$/i.test(key) &&
+          value[key] !== false && value[key] !== null && value[key] !== undefined) {
+        values.push(key);
+      }
+      appendSignalValue(values, value[key], seen);
+    }
+  }
+}
+
+function auditSignalValues(record) {
+  const values = [];
+  const seen = new WeakSet();
+  for (const key of [
+    "reviewer",
+    "reviewer_role",
+    "review_type",
+    "reviewer_label",
+    "audit_mode",
+    "audit_type",
+    "mode",
+    "source",
+    "label",
+    "guarantee"
+  ]) {
+    appendSignalValue(values, record[key], seen);
+  }
+  appendSignalValue(values, record.audit_guarantee, seen);
+  return values;
+}
+
+function isSelfReviewerValue(value) {
+  const raw = normalizeToken(value);
+  if (!raw) return false;
+  if (["self", "local-advisory", "self-check", "author", "implementer"].includes(raw)) return true;
+  return /\b(self|local-advisory|self-check|author|implementer)\b/.test(raw);
+}
+
+function authorHost(input, manifest) {
+  const candidates = [
+    input && input.author_identity && input.author_identity.host,
+    input && input.implementer_host,
+    input && input.host,
+    input && input.implementer_identity,
+    manifest && manifest.execution_profile && manifest.execution_profile.host
+  ];
+  for (const candidate of candidates) {
+    const host = normalizeHost(candidate);
+    if (host) return host;
+  }
+  return "";
+}
+
+function crossReviewAvailable(input, manifest, entry) {
+  for (const value of [
+    entry && entry.cross_review_available,
+    input && input.codex_cross_review_available,
+    input && input.cross_review_available,
+    manifest && manifest.execution_profile && manifest.execution_profile.codex_cross_review_available,
+    manifest && manifest.cross_review_available
+  ]) {
+    const bool = asBoolean(value);
+    if (bool !== null) return bool;
+  }
+  return null;
+}
+
+function reviewerHost(entry) {
+  for (const value of [
+    entry.reviewer_host,
+    entry.host,
+    entry.reviewer_identity,
+    entry.reviewer,
+    entry.agent_id,
+    entry.nickname
+  ]) {
+    const host = normalizeHost(value);
+    if (host) return host;
+  }
+  return "";
+}
+
+function reviewerMechanism(entry) {
+  return normalizeToken(entry.reviewer_mechanism || entry.audit_mechanism || entry.mechanism || entry.review_mechanism);
+}
+
+function usesSeparateSubagent(entry) {
+  if (entry.separate_subagent === true) return true;
+  const mechanism = reviewerMechanism(entry);
+  const process = normalizeToken(entry.reviewer_process || entry.process || entry.agent_process);
+  return /subagent|task-subagent|codex-cross-review|cross-review/.test(`${mechanism} ${process}`);
+}
+
+function validateHostAuditContract(input, manifest, entry, index, reasons) {
+  const implementerHost = authorHost(input, manifest);
+  const reviewer = reviewerHost(entry);
+  const mechanism = reviewerMechanism(entry);
+  const separateSubagent = usesSeparateSubagent(entry);
+  const codexCrossReviewAvailable = crossReviewAvailable(input, manifest, entry);
+
+  if (auditSignalValues(entry).some(isSelfReviewerValue) ||
+      isSelfReviewerValue(entry.agent_id) ||
+      isSelfReviewerValue(entry.nickname)) {
+    reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_reviewer_self_not_allowed`);
+  }
+
+  if (!implementerHost) {
+    reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_author_host_missing`);
+    return;
+  }
+  if (!reviewer) {
+    reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_reviewer_host_missing`);
+  }
+  if (!separateSubagent) {
+    reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_separate_subagent_required`);
+  }
+
+  if (implementerHost === "claude-code") {
+    if (codexCrossReviewAvailable === null) {
+      reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_claude_codex_cross_review_availability_missing`);
+    } else if (codexCrossReviewAvailable === true && reviewer !== "codex" && mechanism !== "codex-cross-review") {
+      reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_claude_codex_cross_review_required`);
+    } else if (codexCrossReviewAvailable === false && !hasText(entry.cross_review_unavailable_reason)) {
+      reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_claude_codex_cross_review_unavailable_reason_missing`);
+    }
+  }
+
+  if (implementerHost === "codex") {
+    if (reviewer && reviewer !== "codex") {
+      reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_codex_reviewer_host_invalid`);
+    }
+    if (!separateSubagent) {
+      reasons.push(`audit_evidence_manifest_independent_audit_evidence_${index}_codex_subagent_required`);
+    }
+  }
+}
+
 function resolveInside(baseDir, candidate) {
   const base = path.resolve(baseDir || process.cwd());
   const resolved = path.resolve(base, String(candidate || ""));
@@ -142,7 +312,7 @@ function validateRunDirEntry(baseDir, entry, index, reasons) {
   if (!check.ok) reasons.push(`audit_evidence_manifest_run_dirs_${index}_${check.reason}`);
 }
 
-function validateIndependentAuditEntry(baseDir, entry, index, reasons) {
+function validateIndependentAuditEntry(baseDir, entry, index, reasons, context) {
   validateFileEntry(baseDir, entry, "independent_audit_evidence", index, reasons);
   if (!entry || typeof entry !== "object") return;
   const requiredText = ["agent_id", "nickname", "reviewer_role", "audit_prompt", "verdict"];
@@ -167,6 +337,7 @@ function validateIndependentAuditEntry(baseDir, entry, index, reasons) {
       }
     }
   }
+  validateHostAuditContract(context.input, context.manifest, entry, index, reasons);
 }
 
 function strictAuditClaim(input) {
@@ -245,7 +416,10 @@ function verifyAuditEvidenceManifest(input, options = {}) {
   requireArray(manifest, "evidence_files", reasons.missing)
     .forEach((entry, index) => validateFileEntry(baseDir, entry, "evidence_files", index, reasons.failed));
   const independent = requireArray(manifest, "independent_audit_evidence", reasons.missing);
-  independent.forEach((entry, index) => validateIndependentAuditEntry(baseDir, entry, index, reasons.failed));
+  independent.forEach((entry, index) => validateIndependentAuditEntry(baseDir, entry, index, reasons.failed, {
+    input,
+    manifest
+  }));
   requireArray(manifest, "skipped_or_unavailable", reasons.missing)
     .forEach((entry, index) => {
       if (!entry || typeof entry !== "object") reasons.failed.push(`audit_evidence_manifest_skipped_or_unavailable_${index}_not_object`);

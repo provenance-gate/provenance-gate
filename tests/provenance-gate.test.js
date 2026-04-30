@@ -45,10 +45,17 @@ function writeFixtureManifest(baseDir, options = {}) {
       kind: "final_gate_independent_review",
       path: "run/independent-review.md",
       sha256: independent,
+      output_file_path: "run/independent-review.md",
+      output_sha256: independent,
       status: "created",
       agent_id: "agent_fixture",
       nickname: "Carver",
       reviewer_role: "independent_reviewer",
+      reviewer_host: options.reviewerHost || "codex",
+      reviewer_mechanism: options.reviewerMechanism || "codex_cross_review",
+      separate_subagent: options.separateSubagent !== false,
+      cross_review_available: options.crossReviewAvailable !== false,
+      cross_review_unavailable_reason: options.crossReviewAvailable === false ? "codex is unavailable in this fixture" : undefined,
       audit_prompt: "Review this fixture independently.",
       files_read: ["src/provenance-gate.js"],
       verdict: "GO",
@@ -57,7 +64,11 @@ function writeFixtureManifest(baseDir, options = {}) {
   ];
   const ref = writeAuditEvidenceManifest(path.join(baseDir, "manifest.json"), {
     mode: "strict",
-    execution_profile: { profile: "strict" },
+    execution_profile: {
+      profile: "strict",
+      host: options.authorHost || "claude-code",
+      codex_cross_review_available: options.crossReviewAvailable !== false
+    },
     gate_statuses: [{ gate: "final_gate", status: "GO" }],
     run_dirs: [{ kind: "review_run", path: "run", status: "created" }],
     evidence_files: [
@@ -76,6 +87,11 @@ function writeFixtureManifest(baseDir, options = {}) {
     input: {
       mode: "strict",
       implementer_identity: "claude-code",
+      author_identity: {
+        host: options.authorHost || "claude-code",
+        session_id: "author_fixture"
+      },
+      codex_cross_review_available: options.crossReviewAvailable !== false,
       audit_evidence_manifest: {
         path: path.relative(baseDir, ref.path),
         sha256: ref.sha256
@@ -130,6 +146,78 @@ function run() {
     const result = evaluateGate(fixture.input, { baseDir: dir });
     assert.strictEqual(result.status, "NOGO");
     assert.ok(result.reasons.failed.includes("audit_evidence_manifest_independent_audit_evidence_missing"));
+  });
+
+  withTempDir((dir) => {
+    const fixture = writeFixtureManifest(dir, {
+      authorHost: "claude-code",
+      reviewerHost: "claude-code",
+      reviewerMechanism: "claude_task_subagent",
+      crossReviewAvailable: true
+    });
+    const result = evaluateGate(fixture.input, { baseDir: dir });
+    assert.strictEqual(result.status, "NOGO");
+    assert.ok(result.reasons.failed.includes("audit_evidence_manifest_independent_audit_evidence_0_claude_codex_cross_review_required"));
+  });
+
+  withTempDir((dir) => {
+    const fixture = writeFixtureManifest(dir, {
+      authorHost: "claude-code",
+      reviewerHost: "claude-code",
+      reviewerMechanism: "inline_review",
+      crossReviewAvailable: false,
+      separateSubagent: false
+    });
+    const result = evaluateGate(fixture.input, { baseDir: dir });
+    assert.strictEqual(result.status, "NOGO");
+    assert.ok(result.reasons.failed.includes("audit_evidence_manifest_independent_audit_evidence_0_separate_subagent_required"));
+  });
+
+  withTempDir((dir) => {
+    const fixture = writeFixtureManifest(dir, {
+      authorHost: "codex",
+      reviewerHost: "codex",
+      reviewerMechanism: "inline_self_review",
+      separateSubagent: false
+    });
+    const result = evaluateGate(fixture.input, { baseDir: dir });
+    assert.strictEqual(result.status, "NOGO");
+    assert.ok(result.reasons.failed.includes("audit_evidence_manifest_independent_audit_evidence_0_codex_subagent_required"));
+  });
+
+  withTempDir((dir) => {
+    const fixture = writeFixtureManifest(dir, {
+      authorHost: "codex",
+      reviewerHost: "codex",
+      reviewerMechanism: "separate_codex_subagent",
+      separateSubagent: true
+    });
+    const result = evaluateGate(fixture.input, { baseDir: dir });
+    assert.strictEqual(result.status, "GO", JSON.stringify(result));
+  });
+
+  withTempDir((dir) => {
+    const fixture = writeFixtureManifest(dir, { crossReviewAvailable: false });
+    const manifestPath = path.join(dir, fixture.input.audit_evidence_manifest.path);
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    delete manifest.independent_audit_evidence[0].cross_review_unavailable_reason;
+    const ref = writeAuditEvidenceManifest(manifestPath, manifest);
+    fixture.input.audit_evidence_manifest.sha256 = ref.sha256;
+    const result = evaluateGate(fixture.input, { baseDir: dir });
+    assert.strictEqual(result.status, "NOGO");
+    assert.ok(result.reasons.failed.includes("audit_evidence_manifest_independent_audit_evidence_0_claude_codex_cross_review_unavailable_reason_missing"));
+  });
+
+  withTempDir((dir) => {
+    const fixture = writeFixtureManifest(dir);
+    const manifestPath = path.join(dir, fixture.input.audit_evidence_manifest.path);
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    manifest.independent_audit_evidence[0].audit_mode = { self_check: true };
+    const ref = writeAuditEvidenceManifest(manifestPath, manifest);
+    fixture.input.audit_evidence_manifest.sha256 = ref.sha256;
+    const result = evaluateGate(fixture.input, { baseDir: dir });
+    assert.strictEqual(result.status, "NOGO");
+    assert.ok(result.reasons.failed.includes("audit_evidence_manifest_independent_audit_evidence_0_reviewer_self_not_allowed"));
   });
 
   const moodOnly = {
