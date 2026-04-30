@@ -377,9 +377,18 @@ node src/cli.js examples/self-attested-review.json    # 期待: NOGO
 node src/cli.js examples/valid-provenance.json        # 期待: GO
 ```
 
+公開リポジトリ側の監査契約も、GOD 本体の strict audit contract に合わせています:
+
+- `GO` には `audit_evidence_manifest` が必須
+- Claude Code が実装担当なら、Codex が使える環境では Codex cross-review が必須
+- Claude Code から Codex が使えない場合は、理由を manifest に残し、別 Task/subagent で監査することが必須
+- Codex が実装担当なら、Claude Code 呼び出しではなく別 Codex subagent による監査が必須
+- `reviewer: self` / `self_check` / `local_advisory` は独立監査証跡として扱わない
+- ユーザーに監査ログ提示を求められたら、manifest path、sha256、evidence files、independent audit outputs、skipped/unavailable 理由を提示する
+
 最初の 2 つは gate が拒否する例なので、終了コードも非 0 になります。`valid` の例だけが成功終了します。
 
-**対象 tag**: `v0.1.1`
+**対象 version**: `0.1.3`
 
 特にコメントが嬉しい軸:
 
